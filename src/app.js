@@ -4,6 +4,7 @@ const routes = require("./routes");
 const cookieParser = require('cookie-parser');
 
 const morgan = require("morgan");
+const session = require("express-session");
 
 const passport = require("passport");
 const bodyParser = require("body-parser");
@@ -29,6 +30,12 @@ server.use((req, res, next) => {
     next();
   }
 });
+
+server.use(session({
+  secret: privateSecret,
+  resave: false,
+  saveUninitialized: false
+}));
 
 server.use(passport.initialize());
 server.use(bodyParser.json());

@@ -7,7 +7,7 @@ async function main() {
   db.connect()
     .then(() => {
       console.log("Succesfully MongoDB connected");
-      server.listen(port, ()=> console.log(`server listening on port ${port}`));
+      server.listen(port, () => console.log(`server listening on port ${port}`));
       })
     .catch((error) => console.error(error));
 }
