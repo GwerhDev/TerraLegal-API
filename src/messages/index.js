@@ -1,4 +1,7 @@
 const message = {
+  user: {
+    error: "Error"
+  },
   admin: {
     permissionDenied: "Permission denied",
     createproduct: {

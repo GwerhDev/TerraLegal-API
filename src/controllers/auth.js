@@ -3,9 +3,9 @@ const userSchema = require('../models/User');
 const { decodeToken } = require('../integrations/jwt');
 const { message } = require('../messages');
 
-router.get("/", async(req, res) => {
+router.get("/:token", async(req, res) => {
   try {
-    const userToken = req.headers.authorization;
+    const userToken = req.params.token;
     const decodedToken = await decodeToken(userToken);
 
     const user = await userSchema.findOne({ _id: decodedToken.data._id });
@@ -17,7 +17,7 @@ router.get("/", async(req, res) => {
       username: user.username,
     };
     
-    return res.status(200).send({ logged: true, userData });
+    return res.status(200).send(userData);
     
   } catch (error) {
     return res.status(500).send({ error: message.user.error });
