@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
         const dataLogin = { _id, username, role};
         const userToken = await createToken(dataLogin, 3);
         
-        return res.status(200).send({ userToken });
+        return res.status(200).send(userToken);
 
       } else {
         return res.status(400).send({ error: message.login.credentialsfailure });
