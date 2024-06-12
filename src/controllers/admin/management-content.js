@@ -1,29 +1,47 @@
 const router = require('express').Router();
 const { decodeToken } = require('../../integrations/jwt');
+const { streambyUpload } = require('../../integrations/streamby');
 const { message } = require('../../messages');
-const { roles } = require('../../misc/consts-user-model');
+const { roles } = require('../../misc/consts-roles');
 const contentSchema = require('../../models/Content');
-const contentGallerySchema = require('../../models/ContentGallery');
+
+router.get('/', async (req, res) => {
+  try {
+    const userToken = req.headers.authorization;
+    if (!userToken) return res.status(403).json({ message: message.admin.permissionDenied });
+    
+    const decodedToken = await decodeToken(userToken);
+    if (decodedToken?.data?.role !== roles.admin) return res.status(403).json({ message: message.admin.permissionDenied });
+
+    const response = await contentSchema.find();
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({ error: error });
+  }
+});
 
 router.post('/create', async (req, res) => {
   try {
     const userToken = req.headers.authorization;
     if (!userToken) return res.status(403).json({ message: message.admin.permissionDenied });
-
+    
     const decodedToken = await decodeToken(userToken);
     if (decodedToken?.data?.role !== roles.admin) return res.status(403).json({ message: message.admin.permissionDenied });
+    
+    const { title, description, published, fileData } = req.body;
 
-    const { contentGallery } = req.body;
+    const streamby = await streambyUpload(fileData);
 
-    for (let i = 0; i < contentGallery.length; i++) {
-      const newContentGallery = new contentGallerySchema({ file: contentGallery[i] });
-      await newContentGallery.save();
-      req.body.contentGallery[i] = newContentGallery._id;
+    const formattedResponse = {
+      title,
+      description,
+      published,
+      contentGallery: [streamby.url],
     }
 
-    const newProduct = new contentSchema(req.body);
-    await newProduct.save();
-    return res.status(201).json({ message: message.admin.createproduct.success, success: true });
+    const newContent = new contentSchema(formattedResponse);
+    await newContent.save();
+    return res.status(201).json({ message: message.admin.createproduct.success, success: true, presigned: streamby.presigned });
   } catch (error) {
     return res.status(500).json({ error: error, success: false });
   }
@@ -39,15 +57,6 @@ router.patch('/update/:id', async (req, res) => {
 
     const { id } = req.params;
     const { contentGallery } = req.body;
-
-    for (let i = 0; i < contentGallery.length; i++) {
-      if (contentGallery[i]._id) await contentGallerySchema.findByIdAndUpdate(contentGallery[i]._id, { file: contentGallery[i].file });
-      else {
-        const newContentGallery = new contentGallerySchema({ file: contentGallery[i].file });
-        await newContentGallery.save();
-        req.body.contentGallery[i] = newContentGallery._id;
-      }
-    };
 
     await contentSchema.findByIdAndUpdate(id, req.body);
 

@@ -9,4 +9,7 @@ module.exports = {
   privateSecret: process.env.PRIVATE_SECRET,
 
   mongodbString: process.env.MONGODB_STRING,
+
+  streambyClientId: process.env.STREAMBY_CLIENT_ID,
+  streambyClientSecret: process.env.STREAMBY_CLIENT_SECRET,
 }
