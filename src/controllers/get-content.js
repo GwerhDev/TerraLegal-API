@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
 
 router.get('/lasts', async (req, res) => {
   try {
-    const response = await contentSchema.find().sort({ _id: -1, published: true }).limit(3);
+    const response = await contentSchema.find({ published: true }).sort({ _id: -1 }).limit(3);
     return res.status(200).json(response);
   } catch (error) {
     return res.status(500).json({ error: error });
