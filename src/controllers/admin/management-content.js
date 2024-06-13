@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { decodeToken } = require('../../integrations/jwt');
-const { streambyUpload } = require('../../integrations/streamby');
+const { streambyUpload, streambyDelete } = require('../../integrations/streamby');
 const { message } = require('../../messages');
 const { roles } = require('../../misc/consts-roles');
 const contentSchema = require('../../models/Content');
@@ -72,11 +72,17 @@ router.delete('/delete/:id', async (req, res) => {
   try {
     const userToken = req.headers.authorization;
     if (!userToken) return res.status(403).json({ message: message.admin.permissionDenied });
-
+    
     const decodedToken = await decodeToken(userToken);
     if (decodedToken?.data?.role !== roles.admin) return res.status(403).json({ message: message.admin.permissionDenied });
-
+    
     const { id } = req.params;
+    
+    const content = await contentSchema.findById(id);
+
+    content.contentGallery.map(async (url) => {
+      await streambyDelete(url);
+    });
 
     await contentSchema.findByIdAndDelete(id);
 
