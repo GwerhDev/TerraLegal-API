@@ -28,14 +28,15 @@ router.post('/create', async (req, res) => {
     const decodedToken = await decodeToken(userToken);
     if (decodedToken?.data?.role !== roles.admin) return res.status(403).json({ message: message.admin.permissionDenied });
     
-    const { title, description, published, fileData } = req.body;
+    const { price, title, published, description, fileData } = req.body;
 
     const streamby = await streambyUpload(fileData);
 
     const formattedResponse = {
+      price,
       title,
-      description,
       published,
+      description,
       contentGallery: [streamby.url],
     }
 
